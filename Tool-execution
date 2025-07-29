@@ -1,0 +1,147 @@
+Here is a professionally structured `README.md` file that explains how to **connect Postman to an MCP server using a file import**, along with how to set up the server (`main.py`) and test it using Postman.
+
+---
+
+````markdown
+# 🔗 Connect Postman with MCP Server via File Import
+
+This guide walks you through the complete process of:
+- Importing MCP requests into Postman via a file
+- Setting up your MCP server with tools
+- Testing MCP server functionality using Postman
+
+---
+
+## 📥 Step 1: Open Postman
+
+Launch Postman on your system.
+
+---
+
+## 📂 Step 2: Import MCP Collection
+
+1. Click the **"Import"** button in the top-left corner of Postman.
+2. Drag and drop your MCP request file (e.g., `hello_mcp_server.postman_collection.json`) into the import window.
+3. Click **"Import"** to load the collection.
+
+✅ The MCP server collection will now appear in your Postman workspace.
+
+---
+
+## 🛠️ Step 3: Setup `main.py` for MCP Server
+
+Create a new Python file named `main.py` and paste the following code:
+
+```python
+from mcp.server.fastmcp import FastMCP
+from mcp.types import TextContent
+
+# Initialize FastMCP server
+mcp = FastMCP(
+    name="hello-server",
+    stateless_http=True
+)
+
+# Example tool 1: Search online
+@mcp.tool()
+def search_online(query: str) -> str:
+    return f"""Results for {query}..."""
+
+# Example tool 2: Get weather
+@mcp.tool()
+async def get_weather(city: str) -> str:
+    return f"""Weather in {city} is sunny."""
+
+# Create the FastAPI-compatible app
+mcp_app = mcp.streamable_http_app()
+````
+
+💡 This file defines two sample tools (`search_online` and `get_weather`) that can be tested via Postman.
+
+---
+
+## 🔄 Step 4: Start / Restart MCP Server
+
+Make sure you're in the project folder and have MCP dependencies installed. Then run:
+
+```bash
+uv run uvicorn main:mcp_app --port 8000 --reload
+```
+
+This command will launch the MCP server on:
+
+```
+http://localhost:8000/mcp/
+```
+
+---
+
+## 🚀 Step 5: Test in Postman
+
+1. In your imported Postman collection, select the request named **"List Available Tools"**.
+2. Make sure:
+
+   * **Method** = POST
+   * **URL** = `http://localhost:8000/mcp/`
+3. Click **Send**
+
+🔎 You should see a list of available tools:
+
+* `search_online`
+* `get_weather`
+
+---
+
+## 🧪 Optional: Test a Tool Execution
+
+To execute a tool from Postman, use the following body in a new POST request to `/mcp/`:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "method": "tools/execute",
+  "id": 2,
+  "params": {
+    "tool_name": "get_weather",
+    "input": {
+      "city": "Karachi"
+    }
+  }
+}
+```
+
+---
+
+## 📌 Notes
+
+* Ensure your MCP server is running before sending requests.
+* Update your tool names and parameters in the request body according to your server logic.
+* Use `@mcp.tool()` to register new tools.
+
+---
+
+## 📁 File Structure (Recommended)
+
+```
+your_project/
+├── main.py
+├── hello_mcp_server.postman_collection.json
+└── requirements.txt
+```
+
+---
+
+## 📞 Support
+
+For issues, check:
+
+* Server logs in the terminal
+* JSON formatting errors in Postman
+* Port conflicts or firewall issues
+
+---
+
+```
+
+Let me know if you'd like the Postman collection `.json` file template or a zip of the project.
+```
