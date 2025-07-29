@@ -1,0 +1,125 @@
+Here is a professional and clear `README.md` file that explains **how to connect Postman manually to an MCP server**:
+
+---
+
+```markdown
+# 📡 How to Connect MCP Server with Postman (Manual Setup Guide)
+
+This guide helps you manually connect Postman to an MCP (Modular Command Protocol) server running at `http://localhost:8000/mcp/`.
+
+---
+
+## ✅ Prerequisites
+
+- MCP server must be running locally on port `8000`
+- [Postman](https://www.postman.com/downloads/) must be installed
+
+---
+
+## 🚀 Step-by-Step Instructions
+
+### 1. Launch Postman
+
+Open Postman on your computer.
+
+---
+
+### 2. Create a New Collection (Optional)
+
+- Click **"Collections"** from the left menu.
+- Click **"+ New Collection"**
+- Name it e.g., `MCP Requests`
+
+---
+
+### 3. Create a New Request
+
+- Click **"New" → "HTTP Request"**
+- Set the request type to **POST**
+- Set the **URL** to:  
+```
+
+[http://localhost:8000/mcp/](http://localhost:8000/mcp/)
+
+````
+
+---
+
+### 4. Configure Headers
+
+Go to the **Headers** tab and add the following:
+
+| Key     | Value                      |
+|---------|----------------------------|
+| Accept  | application/json, text/event-stream |
+| Content-Type | application/json      |
+
+---
+
+### 5. Set the Request Body
+
+- Go to the **Body** tab
+- Choose **raw**
+- Select **JSON** from the dropdown on the right
+- Paste the following request:
+
+```json
+{
+"jsonrpc": "2.0",
+"method": "tools/list",
+"id": 1,
+"params": {}
+}
+````
+
+---
+
+### 6. Send the Request
+
+Click **Send** to make the request to the MCP server.
+
+If everything is configured correctly, you’ll receive a list of available tools from the MCP server in the response body.
+
+---
+
+## 💡 Notes
+
+* Make sure your server is running before sending the request.
+* You can test other methods by changing the `"method"` and `"params"` in the request body.
+
+---
+
+## 🧪 Example: Request to Execute a Tool
+
+Here’s an example body to call a custom tool (replace `your_tool_name` and `your_params` accordingly):
+
+```json
+{
+  "jsonrpc": "2.0",
+  "method": "tools/execute",
+  "id": 2,
+  "params": {
+    "tool_name": "your_tool_name",
+    "input": {
+      "param1": "value1"
+    }
+  }
+}
+```
+
+---
+
+## 📞 Need Help?
+
+If you face any issues connecting, ensure:
+
+* MCP server is running on the correct port
+* No firewalls or proxies are blocking `localhost`
+* JSON formatting is valid
+
+---
+
+```
+
+Let me know if you'd like the same content in a PDF or to include screenshots.
+```
