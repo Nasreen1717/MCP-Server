@@ -1,0 +1,162 @@
+Here is a professionally written, step-by-step `README.md` that guides users on how to **call an MCP tool using Postman** with an updated example for tool invocation (`tools/call` method):
+
+---
+
+````markdown
+# 🛠️ How to Call an MCP Tool via Postman
+
+This guide explains how to call a specific tool exposed by your MCP server using Postman and the `tools/call` method.
+
+---
+
+## 📥 Step 1: Setup MCP Server with a Tool
+
+Create a file named `main.py` and add the following code:
+
+```python
+from mcp.server.fastmcp import FastMCP
+from mcp.types import TextContent
+
+# Initialize FastMCP server
+mcp = FastMCP(
+    name="hello-server",
+    stateless_http=True
+)
+
+# Register a tool for online search
+@mcp.tool(name="online_researcher", description="Search the web for information")
+def search_online(query: str) -> str:
+    return f"""Results for {query}..."""
+
+# Create the MCP-compatible app
+mcp_app = mcp.streamable_http_app()
+````
+
+📝 **Tool Name:** `online_researcher`
+📝 **Functionality:** Returns a static string with the search query
+
+---
+
+## 🔄 Step 2: Run Your MCP Server
+
+Ensure you're in your virtual environment and run the server:
+
+```bash
+uv run uvicorn main:mcp_app --port 8000 --reload
+```
+
+This will start your MCP server at:
+
+```
+http://localhost:8000/mcp/
+```
+
+---
+
+## 🚀 Step 3: Open Postman and Create a New Request
+
+1. Launch Postman.
+2. Click **"New" → "HTTP Request"**.
+3. Set the **Method** to `POST`.
+4. Set the **URL** to:
+
+   ```
+   http://localhost:8000/mcp/
+   ```
+
+---
+
+## 🧾 Step 4: Configure Headers
+
+Go to the **Headers** tab and add the following key-value pairs:
+
+| Key          | Value                               |
+| ------------ | ----------------------------------- |
+| Accept       | application/json, text/event-stream |
+| Content-Type | application/json                    |
+
+---
+
+## 📦 Step 5: Prepare Request Body for Tool Call
+
+Go to the **Body** tab, choose **raw**, and select **JSON** format.
+
+Paste the following JSON body:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 3,
+  "method": "tools/call",
+  "params": {
+    "name": "online_researcher",
+    "arguments": {
+      "query": "what is agentic AI?"
+    }
+  }
+}
+```
+
+🧠 **Explanation:**
+
+* `"method": "tools/call"` tells the MCP server to invoke a registered tool.
+* `"name"` refers to the name of the tool (`online_researcher`).
+* `"arguments"` are passed as inputs to the tool function.
+
+---
+
+## 📤 Step 6: Send the Request
+
+Click the **Send** button.
+
+✅ You should receive a response similar to:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 3,
+  "result": "Results for what is agentic AI?..."
+}
+```
+
+This confirms the tool was successfully called and executed.
+
+---
+
+## 🧪 Optional: Call Other Tools
+
+You can define and call additional tools by repeating the `@mcp.tool(...)` pattern in `main.py` and updating the request body accordingly in Postman.
+
+---
+
+## 📁 Recommended Project Structure
+
+```
+your_project/
+├── main.py
+├── requirements.txt
+└── hello_mcp_toolcall.postman_collection.json (optional)
+```
+
+---
+
+## 📌 Tips
+
+* Ensure your MCP server is running and listening on port `8000`.
+* Always validate JSON formatting before sending requests.
+* Tool names must match exactly as defined in `@mcp.tool(name="...")`.
+
+---
+
+## 📞 Need Help?
+
+* Check console logs for server errors.
+* Verify headers and body formatting in Postman.
+* Ensure the tool name exists and accepts the correct parameters.
+
+---
+
+```
+
+Let me know if you want a matching Postman collection `.json` file or want to auto-generate one from this guide.
+```
