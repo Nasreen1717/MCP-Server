@@ -1,0 +1,246 @@
+Here's a professional, beginner-friendly `README.md` for your MCP (Modular Connection Protocol) connection script. It includes step-by-step explanations, properly commented code blocks, and guidance for usage:
+
+---
+
+# 🤖 MCP Client Connection Script with `uvicorn` and `AsyncExitStack`
+
+This project provides a clean and professional example of how to establish and manage asynchronous connections to an MCP server using Python's `asyncio`, `contextlib.AsyncExitStack`, and MCP's `streamable_http` and `ClientSession`.
+
+---
+
+## 📦 Requirements
+
+Make sure the following dependencies are installed:
+
+```bash
+pip install mcp uvicorn
+```
+
+---
+
+## 📁 Project Structure
+
+```
+your_project/
+├── data.txt           # Sample data file
+├── out.txt            # Output file to save transformed data
+├── mcp_client.py      # Main MCP client code (you are reading about this)
+└── README.md          # Documentation
+```
+
+---
+
+## 🧠 What This Project Demonstrates
+
+* File reading/writing in Python.
+* Using context managers (`with` and `async with`).
+* Creating a reusable asynchronous MCP client.
+* Making streaming JSON-RPC calls to an MCP server.
+* Proper async resource cleanup using `AsyncExitStack`.
+
+---
+
+## 🚀 1. Basic File Operations in Python
+
+### 📖 Read a File
+
+```python
+# Read the contents of data.txt
+with open("data.txt", "r") as file:
+    lines = file.readlines()
+    print(lines)
+```
+
+---
+
+### ✍️ Write to a File
+
+```python
+# Overwrite content in data.txt
+with open("data.txt", "w") as file:
+    file.write("This is not a new line")
+    print("File written successfully")
+```
+
+---
+
+### 🔄 Read and Write Combined (`r+` Mode)
+
+```python
+# Read and write using r+ mode
+with open("data.txt", "r+") as file:
+    lines = file.readlines()
+    print(lines)
+```
+
+---
+
+### 📤 Write Output to New File
+
+```python
+# Write a new line to out.txt
+with open("out.txt", "w") as file:
+    file.write("This is a new line.\n")
+```
+
+---
+
+## 🪄 2. File Conversion with Uppercase Content
+
+```python
+# Convert contents of data.txt to uppercase and save to out.txt
+with open("data.txt", "r+") as file, open("out.txt", "w") as outfile:
+    data = file.read()
+    outfile.write(data.upper())
+    print(data, "Data written to out.txt")
+```
+
+---
+
+## 🔗 3. Asynchronous Context Managers with MCP
+
+### 📡 Using `@asynccontextmanager`
+
+```python
+from contextlib import asynccontextmanager
+import asyncio
+
+@asynccontextmanager
+async def make_connection(name):
+    print(f"Connecting... {name}")
+    yield name
+    print(f"Connected! {name}")
+
+async def main():
+    async with make_connection("A") as a:
+        print(f"Using connection: {a}")
+
+asyncio.run(main())
+```
+
+---
+
+### 🔀 Manual Async Context Manager Class
+
+```python
+async def get_connection(name):
+    class Ctx:
+        async def __aenter__(self):
+            print(f"ENTER... {name}")
+            return name
+
+        async def __aexit__(self, exc_type, exc, tb):
+            print(f"EXIT! {name}")
+    return Ctx()
+
+async def main():
+    async with await get_connection("A") as a:
+        async with await get_connection("B") as b:
+            print(f"Using connections: {a} and {b}")
+
+asyncio.run(main())
+```
+
+---
+
+## 🧰 4. Managing Multiple Async Contexts with `AsyncExitStack`
+
+```python
+from contextlib import AsyncExitStack
+
+async def main():
+    async with AsyncExitStack() as stack:
+        a = await stack.enter_async_context(await get_connection("A"))
+        if a == "A":
+            b = await stack.enter_async_context(await get_connection("B"))
+            print(f"Using connections: {a} and {b}")
+
+        async def customCleanup():
+            print("Custom cleanup logic here")
+
+        stack.push_async_callback(customCleanup)
+        await asyncio.sleep(1)
+
+asyncio.run(main())
+```
+
+---
+
+## 🔧 5. Final MCP Client with `AsyncExitStack`
+
+### ✅ Create `MCPClient` Class
+
+```python
+from mcp.client.streamable_http import streamablehttp_client
+from mcp import ClientSession
+import asyncio
+from contextlib import AsyncExitStack
+
+class MCPClient:
+    def __init__(self, url):
+        self.url = url
+        self.stack = AsyncExitStack()
+        self._sess = None
+
+    async def __aenter__(self):
+        # Open HTTP streaming connection
+        read, write, _ = await self.stack.enter_async_context(
+            streamablehttp_client(self.url)
+        )
+
+        # Initialize MCP session
+        self._sess = await self.stack.enter_async_context(
+            ClientSession(read, write)
+        )
+        await self._sess.initialize()
+        return self
+
+    async def __aexit__(self, *args):
+        await self.stack.aclose()
+
+    async def list_tools(self):
+        return (await self._sess.list_tools()).tools
+
+    async def call_tool(self, tool_name, *args, **kwargs):
+        return await self._sess.call_tool(tool_name, *args, **kwargs)
+```
+
+---
+
+### 🚀 Run the Client
+
+```python
+async def main():
+    async with MCPClient("http://localhost:8000/mcp") as client:
+        tools = await client.list_tools()
+        print(tools, "tools")
+        # Optionally call a tool:
+        # result = await client.call_tool("tool_name", arg1=value1)
+        # print(result)
+
+asyncio.run(main())
+```
+
+---
+
+## 📢 Notes
+
+* Ensure the MCP server is running at `http://localhost:8000/mcp`.
+* You can replace the URL if your endpoint differs.
+* Add more tools or RPC methods as needed in `MCPClient`.
+
+---
+
+## 👩‍💻 Contributing
+
+Pull requests and improvements are welcome. This project is a great starting point for understanding async programming with MCP and `uvicorn`.
+
+---
+
+## 📜 License
+
+This project is open-sourced under the MIT License.
+
+---
+
+
